@@ -22,46 +22,33 @@ RUN useradd -U -m superset && \
         build-essential \
         curl \
         default-libmysqlclient-dev \
-        freetds-dev \
-        freetds-bin \
         libffi-dev \
         libldap2-dev \
         libpq-dev \
         libsasl2-dev \
         libssl-dev \
         python3-dev \
+	python3-venv \
         python3-pip && \
     apt-get clean && \
-    rm -r /var/lib/apt/lists/* && \
-    curl https://raw.githubusercontent.com/${SUPERSET_REPO}/${SUPERSET_VERSION}/requirements.txt -o requirements.txt && \
-    pip3 install --no-cache-dir -r requirements.txt && \
-    pip3 install --no-cache-dir \
-        Werkzeug==0.12.1 \
-        flask-cors==3.0.3 \
-        flask-mail==0.9.1 \
-        flask-oauth==0.12 \
-        flask_oauthlib==0.9.3 \
-        gevent==1.2.2 \
-        impyla==0.14.0 \
-        infi.clickhouse-orm==0.9.8 \
-        mysqlclient==1.3.7 \
-        psycopg2==2.6.1 \
-        pyathena==1.2.5 \
-        pyhive==0.5.1 \
-        pyldap==2.4.28 \
-        pymssql==2.1.3 \
-        redis==2.10.5 \
-        sqlalchemy-clickhouse==0.1.3.post0 \
-        sqlalchemy-redshift==0.5.0 \
-        superset==${SUPERSET_VERSION} && \
-    rm requirements.txt
+    rm -r /var/lib/apt/lists/*
+RUN python3 -m venv superset_env
+WORKDIR superset_env
+RUN /bin/bash -c "source bin/activate"  && curl https://raw.githubusercontent.com/${SUPERSET_REPO}/${SUPERSET_VERSION}/requirements.txt -o requirements.txt 
+RUN pip3 install pybigquery \
+    	 	 superset==${SUPERSET_VERSION} \
+		 idna==2.6 \
+		 pyasn1==0.4.2
 
 # Configure Filesystem
-COPY superset /usr/local/bin
+# COPY superset /usr/local/bin
 VOLUME /home/superset \
        /etc/superset \
        /var/lib/superset
 WORKDIR /home/superset
+
+COPY creds.json /home/superset/
+ENV GOOGLE_APPLICATION_CREDENTIALS creds.json
 
 # Deploy application
 EXPOSE 8088
