@@ -47,8 +47,8 @@ VOLUME /home/superset \
        /var/lib/superset
 WORKDIR /home/superset
 
-COPY creds.json /home/superset/
-ENV GOOGLE_APPLICATION_CREDENTIALS creds.json
+# COPY creds.json /var/lib/superset/
+ENV GOOGLE_APPLICATION_CREDENTIALS /var/lib/superset/creds.json
 
 # Deploy application
 EXPOSE 8088
